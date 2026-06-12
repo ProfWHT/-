@@ -1,3 +1,3 @@
 User-agent: *
 Allow: /
-Sitemap: https://tahfizulquran.taksid.com/sitemap.xml
+Sitemap: https://tahfizulquran.profwht.info/sitemap.xml
