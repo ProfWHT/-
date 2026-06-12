@@ -55,7 +55,7 @@ export default function StudentDashboard() {
         </head>
         <body>
           <div class="card">
-             <h1>তাফসীরুল কুরআন মাদ্রাসা</h1>
+             <h1>তাহফিজুল কুরআন মডেল মাদ্রাসা</h1>
              <h2>Admit Card (প্রবেশপত্র)</h2>
              ${student.photo ? '<img src="' + student.photo + '" class="photo"/>' : '<div class="photo" style="display:flex;align-items:center;justify-content:center;background:#eee;">No Photo</div>'}
              <table>

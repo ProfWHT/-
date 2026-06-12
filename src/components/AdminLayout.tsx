@@ -52,8 +52,8 @@ export default function AdminLayout() {
       <aside className="w-64 bg-slate-900 text-slate-300 flex flex-col shrink-0 min-h-screen hidden md:flex border-r border-slate-800">
         <div className="h-16 flex items-center px-4 gap-2.5 border-b border-slate-800 bg-slate-950">
           <img 
-            src="https://i.ibb.co/YTWCM1Gd/Green-Minimalist-Al-Quran-Logo-20260612-183641-0000.png" 
-            alt="তাফসীরুল কুরআন মাদ্রাসা লোগো" 
+            src="https://i.ibb.co/xtVT4r02/1-20260612-202052-0000.png" 
+            alt="তাহফিজুল কুরআন মডেল মাদ্রাসা লোগো" 
             className="w-9 h-9 object-contain bg-white/10 p-1 rounded-full border border-white/5 filter drop-shadow shrink-0"
             referrerPolicy="no-referrer"
           />
@@ -87,7 +87,7 @@ export default function AdminLayout() {
       {/* Main Content */}
       <div className="flex-1 flex flex-col min-w-0">
         <header className="h-16 bg-white border-b border-slate-200 flex items-center justify-between px-6 sticky top-0 z-10">
-          <div className="font-semibold text-slate-800">তাফসীরুল কুরআন মাদ্রাসা</div>
+          <div className="font-semibold text-slate-800">তাহফিজুল কুরআন মডেল মাদ্রাসা</div>
           <div className="flex items-center gap-3">
              <div className="w-8 h-8 bg-primary text-white rounded-full flex items-center justify-center font-bold">A</div>
              <span className="text-sm font-medium text-slate-600">Super Admin</span>

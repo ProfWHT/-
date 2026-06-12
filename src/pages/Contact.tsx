@@ -15,7 +15,7 @@ export default function Contact() {
                 <div className="bg-primary/10 p-3 rounded-full text-primary shrink-0"><MapPin /></div>
                 <div>
                   <h3 className="font-bold text-lg text-gray-800">ঠিকানা</h3>
-                  <p className="text-gray-600">তাফসীরুল কুরআন মাদ্রাসা<br/>মুসলিম নগর, বুড়িরডাঙ্গা, দিগরাজ, মোংলা, বাগেরহাট</p>
+                  <p className="text-gray-600">তাহফিজুল কুরআন মডেল মাদ্রাসা<br/>মুসলিম নগর, বুড়িরডাঙ্গা, দিগরাজ, মোংলা, বাগেরহাট</p>
                 </div>
              </div>
              

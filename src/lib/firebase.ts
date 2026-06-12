@@ -1,10 +1,15 @@
-import { initializeApp } from "firebase/app";
+import { initializeApp, getApps } from "firebase/app";
 import { getFirestore } from "firebase/firestore";
 import { getAuth } from "firebase/auth";
 import firebaseConfig from '@/firebase-applet-config.json';
 
-const app = initializeApp(firebaseConfig);
-export const db = getFirestore(app, firebaseConfig.firestoreDatabaseId);
+const apps = getApps();
+const app = apps.length > 0 ? apps[0] : initializeApp(firebaseConfig || {
+  apiKey: "dummy",
+  projectId: "dummy",
+});
+
+export const db = getFirestore(app);
 export const auth = getAuth(app);
 
 export enum OperationType {

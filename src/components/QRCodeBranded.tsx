@@ -25,7 +25,7 @@ export default function QRCodeBranded({ size = 200, className = "" }: QRCodeBran
           <ShieldCheck size={13} className="text-gold" /> অফিসিয়াল ডিজিটাল আইডি
         </span>
         <h3 className="font-bold text-gray-800 text-sm md:text-base tracking-tight select-all">
-          তাফসীরুল কুরআন মাদ্রাসা
+          তাহফিজুল কুরআন মডেল মাদ্রাসা
         </h3>
         <p className="text-[10px] text-slate-400 font-sans tracking-wider mt-0.5">ESTD. 2026</p>
       </div>
@@ -40,7 +40,7 @@ export default function QRCodeBranded({ size = 200, className = "" }: QRCodeBran
           level="H" // High error correction
           includeMargin={true}
           imageSettings={{
-            src: "https://i.ibb.co/YTWCM1Gd/Green-Minimalist-Al-Quran-Logo-20260612-183641-0000.png",
+            src: "https://i.ibb.co/xtVT4r02/1-20260612-202052-0000.png",
             height: size * 0.22,
             width: size * 0.22,
             excavate: true,

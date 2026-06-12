@@ -11,7 +11,7 @@ export default function Layout() {
   const [settings, setSettings] = useState<any>({
     header_text: 'بِسْمِ اللَّهِ الرَّحْمَنِ الرَّحِيم',
     phone_number: '01824141497, 01633930308',
-    address: 'তাফসীরুল কুরআন মাদ্রাসা, মুসলিম নগর, বুড়িরডাঙ্গা, দিগরাজ, মোংলা, বাগেরহাট'
+    address: 'তাহফিজুল কুরআন মডেল মাদ্রাসা, মুসলিম নগর, বুড়িরডাঙ্গা, দিগরাজ, মোংলা, বাগেরহাট'
   });
 
   useEffect(() => {
@@ -73,13 +73,13 @@ export default function Layout() {
         <div className="max-w-7xl mx-auto px-4 py-4 flex justify-between items-center">
           <Link to="/" className="flex items-center gap-3">
             <img 
-              src="https://i.ibb.co/YTWCM1Gd/Green-Minimalist-Al-Quran-Logo-20260612-183641-0000.png" 
-              alt="তাফসীরুল কুরআন মাদ্রাসা লোগো" 
+              src="https://i.ibb.co/xtVT4r02/1-20260612-202052-0000.png" 
+              alt="তাহফিজুল কুরআন মডেল মাদ্রাসা লোগো" 
               className="h-12 w-12 object-contain shrink-0 filter drop-shadow hover:scale-105 transition-transform"
               referrerPolicy="no-referrer"
             />
             <div>
-              <h1 className="text-xl md:text-2xl font-bold text-primary-dark">তাফসীরুল কুরআন মাদ্রাসা</h1>
+              <h1 className="text-xl md:text-2xl font-bold text-primary-dark">তাহফিজুল কুরআন মডেল মাদ্রাসা</h1>
               <p className="text-xs text-slate-500 arabic-text text-xl -mt-1 text-primary">مدرسة تفسير القرآن</p>
             </div>
           </Link>
@@ -174,12 +174,12 @@ export default function Layout() {
           <div>
             <div className="flex items-center gap-3 mb-4">
               <img 
-                src="https://i.ibb.co/YTWCM1Gd/Green-Minimalist-Al-Quran-Logo-20260612-183641-0000.png" 
-                alt="তাফসীরুল কুরআন মাদ্রাসা লোগো" 
+                src="https://i.ibb.co/xtVT4r02/1-20260612-202052-0000.png" 
+                alt="তাহফিজুল কুরআন মডেল মাদ্রাসা লোগো" 
                 className="h-12 w-12 object-contain shrink-0 bg-white/10 p-1 rounded-full border border-white/10 filter drop-shadow"
                 referrerPolicy="no-referrer"
               />
-              <h2 className="text-xl font-bold">তাফসীরুল কুরআন মাদ্রাসা</h2>
+              <h2 className="text-xl font-bold">তাহফিজুল কুরআন মডেল মাদ্রাসা</h2>
             </div>
             <p className="text-sm opacity-80 mb-4 max-w-sm">
               কুরআনের আলোয় আলোকিত সমাজ গড়ার প্রত্যয়ে আমাদের এই প্রতিষ্ঠান। আসুন, আপনার সন্তানকে একজন আদর্শ হাফেজে কুরআন হিসেবে গড়ে তুলি।
@@ -224,7 +224,7 @@ export default function Layout() {
       {/* Credit Section with White Background and Green Text */}
       <div className="bg-white py-6 border-t border-slate-100 text-center text-sm text-primary-dark font-medium">
         <div className="max-w-7xl mx-auto px-4 space-y-1">
-          <p className="text-primary-dark font-semibold text-base py-0.5">© 2026 তাফসীরুল কুরআন মাদ্রাসা। সর্বস্বত্ব সংরক্ষিত।</p>
+          <p className="text-primary-dark font-semibold text-base py-0.5">© 2026 তাহফিজুল কুরআন মডেল মাদ্রাসা। সর্বস্বত্ব সংরক্ষিত।</p>
           <p className="text-primary text-sm font-sans tracking-wide mt-1">
             Development by <a href="https://taksid.com" target="_blank" rel="noopener noreferrer" className="hover:underline font-semibold text-primary-dark">Walid Hasan Taksid</a> | <a href="https://taksid.com" target="_blank" rel="noopener noreferrer" className="hover:underline font-semibold text-primary-dark">Taksid.com</a>
           </p>

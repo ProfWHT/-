@@ -5,7 +5,7 @@ import multer from "multer";
 import { put } from "@vercel/blob";
 import fs from "fs";
 import { initializeApp } from "firebase/app";
-import { getFirestore, collection, getDocs, doc, setDoc, deleteDoc } from "firebase/firestore";
+import { initializeFirestore, collection, getDocs, doc, setDoc, deleteDoc } from "firebase/firestore";
 import firebaseConfig from "./firebase-applet-config.json";
 
 // Temporary in-memory storage, DB file initialization removed for Vercel
@@ -21,11 +21,11 @@ const teachers: any[] = [];
 const settings: Record<string, string> = {
   header_text: 'بِسْمِ اللَّهِ الرَّحْمَنِ الرَّحِيم',
   phone_number: '01824141497, 01633930308',
-  address: 'তাফসীরুল কুরআন মাদ্রাসা, মুসলিম নগর, বুড়িরডাঙ্গা, দিগরাজ, মোংলা, বাগেরহাট',
+  address: 'তাহফিজুল কুরআন মডেল মাদ্রাসা, মুসলিম নগর, বুড়িরডাঙ্গা, দিগরাজ, মোংলা, বাগেরহাট',
   director_name: 'হাফেজ মাওলানা ফেরদাউস হোসাইন মাহমুদী',
   director_title: 'পরিচালক',
   teachers_count: '0',
-  notice_text: 'আসসালামু আলাইকুম, তাফসীরুল কুরআন মাদ্রাসায় নতুন সেশনে ভর্তি চলছে! আপনার অনুদান হোক সদকায়ে জারিয়া।'
+  notice_text: 'আসসালামু আলাইকুম, তাহফিজুল কুরআন মডেল মাদ্রাসায় নতুন সেশনে ভর্তি চলছে! আপনার অনুদান হোক সদকায়ে জারিয়া।'
 };
 
 // Initialize Firebase Firestore with local fallback using static json import
@@ -33,7 +33,10 @@ let firestoreDb: any = null;
 try {
   if (firebaseConfig && firebaseConfig.apiKey) {
     const fApp = initializeApp(firebaseConfig);
-    firestoreDb = getFirestore(fApp, firebaseConfig.firestoreDatabaseId);
+    firestoreDb = initializeFirestore(fApp, {
+      experimentalAutoDetectLongPolling: true,
+      experimentalForceLongPolling: true
+    }, firebaseConfig.firestoreDatabaseId);
     console.log("Firestore initialized successfully!");
   }
 } catch (err) {

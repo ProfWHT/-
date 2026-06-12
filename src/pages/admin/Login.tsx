@@ -34,8 +34,8 @@ export default function Login() {
       <div className="max-w-md w-full bg-white rounded-2xl shadow-xl border border-slate-100 p-8">
         <div className="text-center mb-8">
           <img 
-            src="https://i.ibb.co/YTWCM1Gd/Green-Minimalist-Al-Quran-Logo-20260612-183641-0000.png" 
-            alt="তাফসীরুল কুরআন মাদ্রাসা লোগো" 
+            src="https://i.ibb.co/xtVT4r02/1-20260612-202052-0000.png" 
+            alt="তাহফিজুল কুরআন মডেল মাদ্রাসা লোগো" 
             className="w-20 h-20 object-contain mx-auto mb-4 filter drop-shadow"
             referrerPolicy="no-referrer"
           />

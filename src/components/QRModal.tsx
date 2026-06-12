@@ -206,7 +206,7 @@ export default function QRModal({ isOpen, onClose, initialTab = 'view' }: QRModa
             <QrCode className="text-gold animate-pulse" size={24} />
             <div>
               <h2 className="font-bold text-lg md:text-xl">মাদরাসা কিউআর পোর্টাল</h2>
-              <p className="text-[11px] opacity-80">তাফসীরুল কুরআন মাদ্রাসা</p>
+              <p className="text-[11px] opacity-80">তাহফিজুল কুরআন মডেল মাদ্রাসা</p>
             </div>
           </div>
           <button 
