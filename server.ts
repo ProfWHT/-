@@ -6,6 +6,7 @@ import { put } from "@vercel/blob";
 import fs from "fs";
 import { initializeApp } from "firebase/app";
 import { getFirestore, collection, getDocs, doc, setDoc, deleteDoc } from "firebase/firestore";
+import firebaseConfig from "./firebase-applet-config.json";
 
 // Temporary in-memory storage, DB file initialization removed for Vercel
 const users: any[] = [
@@ -27,12 +28,10 @@ const settings: Record<string, string> = {
   notice_text: 'আসসালামু আলাইকুম, তাফসীরুল কুরআন মাদ্রাসায় নতুন সেশনে ভর্তি চলছে! আপনার অনুদান হোক সদকায়ে জারিয়া।'
 };
 
-// Initialize Firebase Firestore with local fallback
+// Initialize Firebase Firestore with local fallback using static json import
 let firestoreDb: any = null;
 try {
-  const firebaseConfigPath = path.join(process.cwd(), "firebase-applet-config.json");
-  if (fs.existsSync(firebaseConfigPath)) {
-    const firebaseConfig = JSON.parse(fs.readFileSync(firebaseConfigPath, "utf-8"));
+  if (firebaseConfig && firebaseConfig.apiKey) {
     const fApp = initializeApp(firebaseConfig);
     firestoreDb = getFirestore(fApp, firebaseConfig.firestoreDatabaseId);
     console.log("Firestore initialized successfully!");
@@ -59,18 +58,18 @@ function syncToFirestore(collectionName: string, id: string | number, data: any 
 
 async function loadFromFirestore() {
   if (!firestoreDb) return;
-  try {
-    const collectionsToLoad = [
-      { name: "users", list: users },
-      { name: "students", list: students },
-      { name: "teachers", list: teachers },
-      { name: "admissions", list: admissions },
-      { name: "donations", list: donations },
-      { name: "donors", list: donors },
-      { name: "gallery", list: gallery },
-    ];
+  const collectionsToLoad = [
+    { name: "users", list: users },
+    { name: "students", list: students },
+    { name: "teachers", list: teachers },
+    { name: "admissions", list: admissions },
+    { name: "donations", list: donations },
+    { name: "donors", list: donors },
+    { name: "gallery", list: gallery },
+  ];
 
-    for (const coll of collectionsToLoad) {
+  for (const coll of collectionsToLoad) {
+    try {
       const snap = await getDocs(collection(firestoreDb, coll.name));
       if (!snap.empty) {
         coll.list.length = 0;
@@ -79,8 +78,12 @@ async function loadFromFirestore() {
           coll.list.push({ ...data, id: String(docSnap.id) });
         });
       }
+    } catch (err) {
+      console.error(`Failed to load ${coll.name} from Firestore:`, err);
     }
+  }
 
+  try {
     const settingsSnap = await getDocs(collection(firestoreDb, "settings"));
     if (!settingsSnap.empty) {
       settingsSnap.forEach(docSnap => {
@@ -90,12 +93,12 @@ async function loadFromFirestore() {
         }
       });
     }
-
-    if (users.length === 0) {
-      users.push({ id: "1", username: "admin", password: "admin123", role: "admin" });
-    }
   } catch (err) {
-    console.error("Failed to load data from Firestore:", err);
+    console.error("Failed to load settings from Firestore:", err);
+  }
+
+  if (users.length === 0) {
+    users.push({ id: "1", username: "admin", password: "admin123", role: "admin" });
   }
 }
 
