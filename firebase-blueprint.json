@@ -1,0 +1,124 @@
+{
+  "entities": {
+    "Student": {
+      "title": "Student",
+      "description": "Student information including academic and personal details.",
+      "type": "object",
+      "properties": {
+        "name": { "type": "string" },
+        "roll_number": { "type": "string" },
+        "password": { "type": "string" },
+        "department": { "type": "string" },
+        "class_name": { "type": "string" },
+        "academic_year": { "type": "string" },
+        "result": { "type": "string" },
+        "status": { "type": "string" },
+        "fee_paid": { "type": "number" },
+        "fee_due": { "type": "number" },
+        "guardian_name": { "type": "string" },
+        "guardian_phone": { "type": "string" },
+        "address": { "type": "string" },
+        "photo": { "type": "string" }
+      },
+      "required": ["name", "roll_number", "department"]
+    },
+    "Teacher": {
+      "title": "Teacher",
+      "description": "Teacher profile.",
+      "type": "object",
+      "properties": {
+        "name": { "type": "string" },
+        "title": { "type": "string" },
+        "photo": { "type": "string" },
+        "phone": { "type": "string" },
+        "username": { "type": "string" },
+        "password": { "type": "string" },
+        "has_admin_access": { "type": "boolean" }
+      },
+      "required": ["name", "username"]
+    },
+    "Admission": {
+      "title": "Admission",
+      "description": "Admission application.",
+      "type": "object",
+      "properties": {
+        "student_name": { "type": "string" },
+        "dob": { "type": "string" },
+        "guardian_name": { "type": "string" },
+        "contact_number": { "type": "string" },
+        "department": { "type": "string" },
+        "payment_method": { "type": "string" },
+        "trx_id": { "type": "string" },
+        "status": { "type": "string" }
+      },
+      "required": ["student_name", "department"]
+    },
+    "Donation": {
+      "title": "Donation",
+      "description": "Donation record.",
+      "type": "object",
+      "properties": {
+        "donor_name": { "type": "string" },
+        "amount": { "type": "number" },
+        "donation_type": { "type": "string" },
+        "payment_method": { "type": "string" },
+        "trx_id": { "type": "string" },
+        "date": { "type": "string" },
+        "status": { "type": "string" }
+      },
+      "required": ["donor_name", "amount"]
+    },
+    "Donor": {
+      "title": "Donor",
+      "description": "Donor profile.",
+      "type": "object",
+      "properties": {
+        "name": { "type": "string" },
+        "photo": { "type": "string" },
+        "phone": { "type": "string" },
+        "address": { "type": "string" },
+        "total_donated": { "type": "number" }
+      },
+      "required": ["name"]
+    },
+    "GalleryItem": {
+      "title": "GalleryItem",
+      "description": "Gallery image.",
+      "type": "object",
+      "properties": {
+        "image": { "type": "string" },
+        "caption": { "type": "string" },
+        "date": { "type": "string" }
+      },
+      "required": ["image"]
+    },
+    "LandDonor": {
+      "title": "LandDonor",
+      "description": "Donor for permanent land campus project.",
+      "type": "object",
+      "properties": {
+        "donor_name": { "type": "string" },
+        "father_name": { "type": "string" },
+        "address": { "type": "string" },
+        "phone": { "type": "string" },
+        "sq_ft": { "type": "number" },
+        "total_price": { "type": "number" },
+        "payment_method": { "type": "string" },
+        "trx_id": { "type": "string" },
+        "date": { "type": "string" },
+        "status": { "type": "string" }
+      },
+      "required": ["donor_name", "sq_ft", "total_price"]
+    }
+  },
+  "firestore": {
+    "students/{studentId}": { "schema": { "$ref": "Student" }, "description": "Collection of students." },
+    "teachers/{teacherId}": { "schema": { "$ref": "Teacher" }, "description": "Collection of teachers." },
+    "admissions/{admissionId}": { "schema": { "$ref": "Admission" }, "description": "Collection of admissions." },
+    "donations/{donationId}": { "schema": { "$ref": "Donation" }, "description": "Collection of donations." },
+    "donors/{donorId}": { "schema": { "$ref": "Donor" }, "description": "Collection of donors." },
+    "gallery/{galleryId}": { "schema": { "$ref": "GalleryItem" }, "description": "Collection of gallery items." },
+    "settings/{settingId}": { "schema": { "type": "object" }, "description": "Collection for settings." },
+    "land_donors/{landDonorId}": { "schema": { "$ref": "LandDonor" }, "description": "Collection of permanent land donors." }
+  }
+}

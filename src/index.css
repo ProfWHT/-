@@ -1,0 +1,20 @@
+@import url('https://fonts.googleapis.com/css2?family=Tiro+Bangla:ital@0;1&family=Amiri:wght@400;700&display=swap');
+@import "tailwindcss";
+
+@theme {
+  --color-primary: #10B981; /* Emerald/Green */
+  --color-primary-dark: #047857;
+  --color-gold: #F59E0B; /* Gold/Amber */
+  --color-gold-light: #FCD34D;
+  --font-bangla: "Tiro Bangla", serif;
+  --font-arabic: "Amiri", serif;
+}
+
+body {
+  font-family: var(--font-bangla);
+  background-color: #f8fafc;
+}
+
+.arabic-text {
+  font-family: var(--font-arabic);
+}
