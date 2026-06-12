@@ -1,9 +1,11 @@
 import express from "express";
 import path from "path";
-import { createServer as createViteServer } from "vite";
 import cors from "cors";
 import multer from "multer";
 import { put } from "@vercel/blob";
+import fs from "fs";
+import { initializeApp } from "firebase/app";
+import { getFirestore, collection, getDocs, doc, setDoc, deleteDoc } from "firebase/firestore";
 
 // Temporary in-memory storage, DB file initialization removed for Vercel
 const users: any[] = [
@@ -24,6 +26,78 @@ const settings: Record<string, string> = {
   teachers_count: '0',
   notice_text: 'আসসালামু আলাইকুম, তাফসীরুল কুরআন মাদ্রাসায় নতুন সেশনে ভর্তি চলছে! আপনার অনুদান হোক সদকায়ে জারিয়া।'
 };
+
+// Initialize Firebase Firestore with local fallback
+let firestoreDb: any = null;
+try {
+  const firebaseConfigPath = path.join(process.cwd(), "firebase-applet-config.json");
+  if (fs.existsSync(firebaseConfigPath)) {
+    const firebaseConfig = JSON.parse(fs.readFileSync(firebaseConfigPath, "utf-8"));
+    const fApp = initializeApp(firebaseConfig);
+    firestoreDb = getFirestore(fApp, firebaseConfig.firestoreDatabaseId);
+    console.log("Firestore initialized successfully!");
+  }
+} catch (err) {
+  console.error("Firestore init error, fallback to memory:", err);
+}
+
+function syncToFirestore(collectionName: string, id: string | number, data: any | null) {
+  if (!firestoreDb) return;
+  const docRef = doc(firestoreDb, collectionName, String(id));
+  if (data === null) {
+    deleteDoc(docRef).catch(err => console.error("Firestore delete error:", err));
+  } else {
+    const sanitized: any = {};
+    for (const key of Object.keys(data)) {
+      if (data[key] !== undefined) {
+        sanitized[key] = data[key];
+      }
+    }
+    setDoc(docRef, sanitized).catch(err => console.error("Firestore set error:", err));
+  }
+}
+
+async function loadFromFirestore() {
+  if (!firestoreDb) return;
+  try {
+    const collectionsToLoad = [
+      { name: "users", list: users },
+      { name: "students", list: students },
+      { name: "teachers", list: teachers },
+      { name: "admissions", list: admissions },
+      { name: "donations", list: donations },
+      { name: "donors", list: donors },
+      { name: "gallery", list: gallery },
+    ];
+
+    for (const coll of collectionsToLoad) {
+      const snap = await getDocs(collection(firestoreDb, coll.name));
+      if (!snap.empty) {
+        coll.list.length = 0;
+        snap.forEach(docSnap => {
+          const data = docSnap.data();
+          coll.list.push({ ...data, id: String(docSnap.id) });
+        });
+      }
+    }
+
+    const settingsSnap = await getDocs(collection(firestoreDb, "settings"));
+    if (!settingsSnap.empty) {
+      settingsSnap.forEach(docSnap => {
+        const data = docSnap.data();
+        if (data.value !== undefined) {
+          settings[docSnap.id] = data.value;
+        }
+      });
+    }
+
+    if (users.length === 0) {
+      users.push({ id: "1", username: "admin", password: "admin123", role: "admin" });
+    }
+  } catch (err) {
+    console.error("Failed to load data from Firestore:", err);
+  }
+}
 
 // Database mock functions
 const db = {
@@ -116,12 +190,14 @@ const db = {
                     const [username, password, role] = args;
                     const newUser = { id: users.length + 1, username, password, role: role || 'admin' };
                     users.push(newUser);
+                    syncToFirestore("users", newUser.id, newUser);
                     return { changes: 1, lastInsertRowid: newUser.id };
                 }
                 
                 if (q.startsWith("insert or replace into settings") || q.startsWith("replace into settings")) {
                     const [key, value] = args;
                     settings[key] = value;
+                    syncToFirestore("settings", key, { value });
                     return { changes: 1, lastInsertRowid: 0 };
                 }
 
@@ -130,6 +206,7 @@ const db = {
                     const userIdx = users.findIndex(u => u.username === username && u.password === oldPassword);
                     if (userIdx !== -1) {
                         users[userIdx].password = newPassword;
+                        syncToFirestore("users", users[userIdx].id, users[userIdx]);
                         return { changes: 1, lastInsertRowid: 0 };
                     }
                     return { changes: 0, lastInsertRowid: 0 };
@@ -142,6 +219,7 @@ const db = {
                         name, roll_number, department, guardian_name, guardian_phone, address, status, class_name, academic_year, result, password, photo, fee_paid, fee_due
                     };
                     students.push(newStudent);
+                    syncToFirestore("students", newStudent.id, newStudent);
                     return { changes: 1, lastInsertRowid: newStudent.id };
                 }
 
@@ -153,6 +231,7 @@ const db = {
                             ...students[idx],
                             name, roll_number, department, guardian_name, guardian_phone, address, status, class_name, academic_year, result, password, photo, fee_paid, fee_due
                         };
+                        syncToFirestore("students", id, students[idx]);
                         return { changes: 1, lastInsertRowid: 0 };
                     }
                     return { changes: 0, lastInsertRowid: 0 };
@@ -163,6 +242,7 @@ const db = {
                     const idx = students.findIndex(s => s.id == id);
                     if (idx !== -1) {
                         students.splice(idx, 1);
+                        syncToFirestore("students", id, null);
                         return { changes: 1, lastInsertRowid: 0 };
                     }
                     return { changes: 0, lastInsertRowid: 0 };
@@ -175,6 +255,7 @@ const db = {
                         student_name, dob, guardian_name, contact_number, department, payment_method, trx_id, status: 'pending'
                     };
                     admissions.push(newAdm);
+                    syncToFirestore("admissions", newAdm.id, newAdm);
                     return { changes: 1, lastInsertRowid: newAdm.id };
                 }
 
@@ -183,6 +264,7 @@ const db = {
                     const idx = admissions.findIndex(a => a.id == id);
                     if (idx !== -1) {
                         admissions[idx].status = status;
+                        syncToFirestore("admissions", id, admissions[idx]);
                         return { changes: 1, lastInsertRowid: 0 };
                     }
                     return { changes: 0, lastInsertRowid: 0 };
@@ -193,6 +275,7 @@ const db = {
                     const idx = admissions.findIndex(a => a.id == id);
                     if (idx !== -1) {
                         admissions.splice(idx, 1);
+                        syncToFirestore("admissions", id, null);
                         return { changes: 1, lastInsertRowid: 0 };
                     }
                     return { changes: 0, lastInsertRowid: 0 };
@@ -204,6 +287,7 @@ const db = {
                     if (idx !== -1) {
                         const oldStatus = donations[idx].status;
                         donations[idx].status = status;
+                        syncToFirestore("donations", id, donations[idx]);
                         
                         // Only add to donors when status gets approved/received!
                         if (status === 'received' && oldStatus !== 'received') {
@@ -212,12 +296,15 @@ const db = {
                             let donorIdx = donors.findIndex(dr => dr.name === donorName);
                             if (donorIdx !== -1) {
                                 donors[donorIdx].total_donated = (donors[donorIdx].total_donated || 0) + Number(amount);
+                                syncToFirestore("donors", donors[donorIdx].id, donors[donorIdx]);
                             } else {
-                                donors.push({
+                                const newDonor = {
                                     id: donors.length + 1,
                                     name: donorName,
                                     total_donated: Number(amount)
-                                });
+                                };
+                                donors.push(newDonor);
+                                syncToFirestore("donors", newDonor.id, newDonor);
                             }
                         }
                         return { changes: 1, lastInsertRowid: 0 };
@@ -232,6 +319,7 @@ const db = {
                         donor_name, amount, donation_type, payment_method, trx_id, date, status: 'pending'
                     };
                     donations.push(newDonation);
+                    syncToFirestore("donations", newDonation.id, newDonation);
                     return { changes: 1, lastInsertRowid: newDonation.id };
                 }
 
@@ -240,6 +328,7 @@ const db = {
                     const idx = donors.findIndex(d => d.id == id);
                     if (idx !== -1) {
                         donors[idx].total_donated = (donors[idx].total_donated || 0) + Number(amount);
+                        syncToFirestore("donors", id, donors[idx]);
                         return { changes: 1, lastInsertRowid: 0 };
                     }
                     return { changes: 0, lastInsertRowid: 0 };
@@ -252,6 +341,7 @@ const db = {
                         name, photo, phone, address, total_donated
                     };
                     donors.push(newDonor);
+                    syncToFirestore("donors", newDonor.id, newDonor);
                     return { changes: 1, lastInsertRowid: newDonor.id };
                 }
 
@@ -262,17 +352,20 @@ const db = {
                         name, title, photo, phone, username, password, has_admin_access
                     };
                     teachers.push(newTeacher);
+                    syncToFirestore("teachers", newTeacher.id, newTeacher);
                     return { changes: 1, lastInsertRowid: newTeacher.id };
                 }
 
                 if (q.startsWith("update teachers set")) {
                     let updated = false;
+                    let matchedId = null;
                     if (args.length === 8) {
                         const [name, title, photo, phone, username, password, has_admin_access, id] = args;
                         const idx = teachers.findIndex(t => t.id == id);
                         if (idx !== -1) {
                             teachers[idx] = { ...teachers[idx], name, title, photo, phone, username, password, has_admin_access };
                             updated = true;
+                            matchedId = id;
                         }
                     } else {
                         const [name, title, photo, phone, username, has_admin_access, id] = args;
@@ -280,7 +373,12 @@ const db = {
                         if (idx !== -1) {
                             teachers[idx] = { ...teachers[idx], name, title, photo, phone, username, has_admin_access };
                             updated = true;
+                            matchedId = id;
                         }
+                    }
+                    if (updated && matchedId) {
+                        const idx = teachers.findIndex(t => t.id == matchedId);
+                        syncToFirestore("teachers", matchedId, teachers[idx]);
                     }
                     return { changes: updated ? 1 : 0, lastInsertRowid: 0 };
                 }
@@ -290,6 +388,7 @@ const db = {
                     const idx = teachers.findIndex(t => t.id == id);
                     if (idx !== -1) {
                         teachers.splice(idx, 1);
+                        syncToFirestore("teachers", id, null);
                         return { changes: 1, lastInsertRowid: 0 };
                     }
                     return { changes: 0, lastInsertRowid: 0 };
@@ -302,6 +401,7 @@ const db = {
                         image, caption, date
                     };
                     gallery.push(newImg);
+                    syncToFirestore("gallery", newImg.id, newImg);
                     return { changes: 1, lastInsertRowid: newImg.id };
                 }
 
@@ -310,6 +410,7 @@ const db = {
                     const idx = gallery.findIndex(g => g.id == id);
                     if (idx !== -1) {
                         gallery.splice(idx, 1);
+                        syncToFirestore("gallery", id, null);
                         return { changes: 1, lastInsertRowid: 0 };
                     }
                     return { changes: 0, lastInsertRowid: 0 };
@@ -324,6 +425,9 @@ const db = {
 };
 
 async function startServer() {
+  // Load initial data from Firebase Firestore
+  await loadFromFirestore();
+
   const app = express();
   const PORT = 3000;
 
@@ -745,6 +849,7 @@ async function startServer() {
 
   // Vite middleware for development
   if (process.env.NODE_ENV !== "production") {
+    const { createServer: createViteServer } = await import("vite");
     const vite = await createViteServer({
       server: { middlewareMode: true },
       appType: "spa",
