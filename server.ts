@@ -34,8 +34,7 @@ try {
   if (firebaseConfig && firebaseConfig.apiKey) {
     const fApp = initializeApp(firebaseConfig);
     firestoreDb = initializeFirestore(fApp, {
-      experimentalAutoDetectLongPolling: true,
-      experimentalForceLongPolling: true
+      experimentalAutoDetectLongPolling: true
     }, firebaseConfig.firestoreDatabaseId);
     console.log("Firestore initialized successfully!");
   }
@@ -439,6 +438,12 @@ async function startServer() {
 
   app.use(cors());
   app.use(express.json({ limit: '10mb' }));
+
+  // Error handling middleware to ensure JSON responses on errors
+  app.use((err: any, req: any, res: any, next: any) => {
+    console.error("Unhandled error:", err);
+    res.status(500).json({ error: "Internal server error", details: err.message });
+  });
 
   const upload = multer({ storage: multer.memoryStorage() });
 
