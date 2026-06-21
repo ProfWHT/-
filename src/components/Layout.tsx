@@ -80,7 +80,7 @@ export default function Layout() {
             />
             <div>
               <h1 className="text-xl md:text-2xl font-bold text-primary-dark">তাহফিজুল কুরআন মডেল মাদ্রাসা</h1>
-              <p className="text-xs text-slate-500 arabic-text text-xl -mt-1 text-primary">مدرسة تفسير القرآن</p>
+              <p className="text-xs text-slate-500 arabic-text text-xl -mt-1 text-primary">معهد تحفيظ القرآن الكريم النموذجي</p>
             </div>
           </Link>
 

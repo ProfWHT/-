@@ -78,9 +78,10 @@ export default function Home() {
             <div className="aspect-square rounded-full border border-gold/30 absolute inset-0 animate-[spin_60s_linear_infinite]"></div>
             <div className="aspect-square rounded-full border border-white/20 absolute inset-4 animate-[spin_40s_linear_infinite_reverse]"></div>
             <img 
-              src="https://images.unsplash.com/photo-1596489814275-c96b797fccc2?auto=format&fit=crop&q=80" 
+              src="https://i.ibb.co/35C7PY16/Whats-App-Image-2026-06-21-at-1-41-16-PM-1.jpg" 
               alt="Madrasah" 
-              className="rounded-full w-full max-w-[400px] mx-auto relative z-10 border-4 border-white/10 shadow-2xl object-cover aspect-square"
+              className="rounded-full w-full max-w-[250px] sm:max-w-[300px] md:max-w-[400px] mx-auto relative z-10 border-4 border-white/10 shadow-2xl object-cover aspect-square"
+              referrerPolicy="no-referrer"
             />
           </motion.div>
         </div>
@@ -253,6 +254,23 @@ export default function Home() {
         onClose={() => setIsModalOpen(false)} 
         initialTab={qrTab}
       />
+
+      {/* Gallery Section */}
+      <section className="py-20 bg-white">
+        <div className="max-w-7xl mx-auto px-4">
+          <div className="text-center mb-16">
+            <h2 className="text-3xl font-bold text-gray-800 mb-4 inline-block relative">
+              মাদরাসার এক ঝলক
+              <span className="absolute -bottom-2 left-1/4 right-1/4 h-1 bg-gold rounded-full"></span>
+            </h2>
+          </div>
+          <div className="grid md:grid-cols-3 gap-6">
+            <img src="https://i.ibb.co/PsD9cGWz/Whats-App-Image-2026-06-21-at-1-41-15-PM.jpg" alt="Activity 1" className="rounded-xl shadow-lg w-full h-64 object-cover" referrerPolicy="no-referrer" />
+            <img src="https://i.ibb.co/35C7PY16/Whats-App-Image-2026-06-21-at-1-41-16-PM-1.jpg" alt="Activity 2" className="rounded-xl shadow-lg w-full h-64 object-cover" referrerPolicy="no-referrer" />
+            <img src="https://i.ibb.co/NdG5wZhg/Whats-App-Image-2026-06-21-at-1-41-16-PM.jpg" alt="Activity 3" className="rounded-xl shadow-lg w-full h-64 object-cover" referrerPolicy="no-referrer" />
+          </div>
+        </div>
+      </section>
 
       {/* Departments */}
       <section className="py-20 bg-slate-50">
