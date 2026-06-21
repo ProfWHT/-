@@ -1,6 +1,6 @@
 rules_version = '2';
 service cloud.firestore {
-  match /databases/ai-studio-002b111e-62c8-4cc3-b324-3c798ba3698a/documents {
+  match /databases/{database}/documents {
     match /{document=**} {
       allow read, write: if true;
     }

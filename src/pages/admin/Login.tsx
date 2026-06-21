@@ -17,11 +17,12 @@ export default function Login() {
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({ username, password })
       });
-      
+      console.log('response ok:', response.ok);
+      let data;
       if (!response.ok) {
         let errorMsg = 'Login failed';
         try {
-            const errorData = await response.json();
+            const errorData = await response.clone().json();
             errorMsg = errorData.error || errorData.details || errorMsg;
         } catch (e) {
             errorMsg = `Server returned status ${response.status}`;
@@ -30,7 +31,7 @@ export default function Login() {
         return;
       }
 
-      const data = await response.json();
+      data = await response.clone().json();
       localStorage.setItem('adminToken', data.token);
       navigate('/admin');
     } catch (err) {
