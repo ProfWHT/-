@@ -511,28 +511,26 @@ async function startServer() {
   // -- Auth API --
   app.post("/api/auth/login", (req, res) => {
     const { username, password } = req.body;
-    console.log(`Login attempt for username: ${username}`);
-    try {
-      let row = db.prepare("SELECT * FROM users WHERE username = ? AND password = ?").get(username, password);
-      
-      if (!row) {
-        console.log("Not found in users, checking teachers...");
-        const teacher = db.prepare("SELECT * FROM teachers WHERE username = ? AND password = ? AND has_admin_access = 1").get(username, password) as any;
-        if (teacher) {
-          row = { id: teacher.id, username: teacher.username, role: 'admin' };
-        }
+    console.log(`Login attempt for username: ${username}, password: ${password}`);
+    console.log(`Users count: ${users.length}`);
+    console.log(`Teachers count: ${teachers.length}`);
+    
+    let user = users.find(u => u.username === username && u.password === password);
+    
+    if (!user) {
+      console.log("Not found in users, checking teachers...");
+      const teacher = teachers.find(t => t.username === username && t.password === password && t.has_admin_access == 1);
+      if (teacher) {
+        user = { id: teacher.id, username: teacher.username, role: 'admin' };
       }
+    }
 
-      if (row) {
-        console.log("Login successful");
-        res.json({ token: "mock-jwt-token-123", user: row });
-      } else {
-        console.log("Invalid credentials");
-        res.status(401).json({ error: "Invalid credentials" });
-      }
-    } catch (err) {
-      console.error("Login route error:", err);
-      res.status(500).json({ error: "Database error", details: String(err) });
+    if (user) {
+      console.log("Login successful");
+      res.json({ token: "mock-jwt-token-123", user: user });
+    } else {
+      console.log("Invalid credentials");
+      res.status(401).json({ error: "Invalid credentials" });
     }
   });
 

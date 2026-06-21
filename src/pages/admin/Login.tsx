@@ -25,6 +25,7 @@ export default function Login() {
         setError(data.error || data.details || 'Login failed');
       }
     } catch (err) {
+      console.error(err);
       setError(`Server error: ${err}`);
     }
   };
