@@ -33,7 +33,7 @@ export default function QRCodeBranded({ size = 200, className = "" }: QRCodeBran
       {/* QR Code with custom logo center */}
       <div className="p-3 bg-slate-50 rounded-xl border border-slate-100 flex items-center justify-center shadow-inner relative group cursor-pointer">
         <QRCodeSVG
-          value="https://tahfizulquran.profwht.info/"
+          value="https://tahfizulquranmodelmadrassa.xyz/"
           size={size}
           bgColor="#F8FAFC" // Soft light grey/slate-50 to match design exactly
           fgColor="#047857" // Primary dark emerald green
@@ -54,12 +54,12 @@ export default function QRCodeBranded({ size = 200, className = "" }: QRCodeBran
       <div className="text-center mt-4">
         <p className="text-[11px] text-slate-500 font-medium">ওয়েবসাইট ঠিকানা</p>
         <a 
-          href="https://tahfizulquran.profwht.info/" 
+          href="https://tahfizulquranmodelmadrassa.xyz/" 
           target="_blank" 
           rel="noopener noreferrer" 
           className="text-xs font-semibold text-primary-dark hover:text-gold transition-colors font-sans tracking-wide mt-0.5 block hover:underline"
         >
-          tahfizulquran.profwht.info
+          tahfizulquranmodelmadrassa.xyz
         </a>
       </div>
     </div>

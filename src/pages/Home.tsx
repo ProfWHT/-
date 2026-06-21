@@ -78,7 +78,7 @@ export default function Home() {
             <div className="aspect-square rounded-full border border-gold/30 absolute inset-0 animate-[spin_60s_linear_infinite]"></div>
             <div className="aspect-square rounded-full border border-white/20 absolute inset-4 animate-[spin_40s_linear_infinite_reverse]"></div>
             <img 
-              src="https://i.ibb.co/35C7PY16/Whats-App-Image-2026-06-21-at-1-41-16-PM-1.jpg" 
+              src="https://i.ibb.co/gM8d0YSL/Whats-App-Image-2026-06-21-at-2-16-50-PM.jpg" 
               alt="Madrasah" 
               className="rounded-full w-full max-w-[250px] sm:max-w-[300px] md:max-w-[400px] mx-auto relative z-10 border-4 border-white/10 shadow-2xl object-cover aspect-square"
               referrerPolicy="no-referrer"
@@ -95,9 +95,7 @@ export default function Home() {
                {settings.director_photo ? (
                   <img src={settings.director_photo} alt="Director" className="w-full h-full object-cover" />
                ) : (
-                  <div className="w-full h-full bg-slate-200 flex items-center justify-center text-slate-400">
-                    <Users size={64} />
-                  </div>
+                  <img src="https://i.ibb.co/2Y0t2k0h/Whats-App-Image-2026-06-21-at-2-12-21-PM.jpg" alt="Director" className="w-full h-full object-cover" referrerPolicy="no-referrer" />
                )}
             </div>
             <div className="text-center mt-4">
@@ -128,27 +126,20 @@ export default function Home() {
       {/* Quick Stats */}
       {stats && (
         <section className="py-12 bg-white border-y border-slate-100 relative z-20 -mt-8 mx-4 md:mx-auto max-w-7xl rounded-xl shadow-lg">
-          <div className="grid grid-cols-2 md:grid-cols-4 gap-8 px-8">
+          <div className="grid grid-cols-1 md:grid-cols-3 gap-8 px-8">
              <div className="text-center">
                 <div className="w-12 h-12 bg-blue-50 text-blue-500 rounded-full flex items-center justify-center mx-auto mb-3">
                    <GraduationCap size={24} />
                 </div>
-                <h3 className="text-3xl font-bold text-gray-800">{stats.totalStudents}+</h3>
-                <p className="text-gray-500 font-semibold text-sm">শিক্ষার্থী</p>
+                <h3 className="text-3xl font-bold text-gray-800">৩৪+</h3>
+                <p className="text-gray-500 font-semibold text-sm">শিক্ষার্থী (আবাসিক ১০ জন, অনাবাসিক ২৪ জন)</p>
              </div>
              <div className="text-center">
                 <div className="w-12 h-12 bg-indigo-50 text-indigo-500 rounded-full flex items-center justify-center mx-auto mb-3">
                    <BookOpen size={24} />
                 </div>
-                <h3 className="text-3xl font-bold text-gray-800">{stats.totalTeachers}+</h3>
+                <h3 className="text-3xl font-bold text-gray-800">৫+</h3>
                 <p className="text-gray-500 font-semibold text-sm">শিক্ষক ও স্টাফ</p>
-             </div>
-             <div className="text-center">
-                <div className="w-12 h-12 bg-orange-50 text-orange-500 rounded-full flex items-center justify-center mx-auto mb-3">
-                   <UserPlus size={24} />
-                </div>
-                <h3 className="text-3xl font-bold text-gray-800">{stats.pendingAdmissions}</h3>
-                <p className="text-gray-500 font-semibold text-sm">নতুন আবেদন</p>
              </div>
              <div className="text-center">
                 <div className="w-12 h-12 bg-green-50 text-green-500 rounded-full flex items-center justify-center mx-auto mb-3">
@@ -268,6 +259,8 @@ export default function Home() {
             <img src="https://i.ibb.co/PsD9cGWz/Whats-App-Image-2026-06-21-at-1-41-15-PM.jpg" alt="Activity 1" className="rounded-xl shadow-lg w-full h-64 object-cover" referrerPolicy="no-referrer" />
             <img src="https://i.ibb.co/35C7PY16/Whats-App-Image-2026-06-21-at-1-41-16-PM-1.jpg" alt="Activity 2" className="rounded-xl shadow-lg w-full h-64 object-cover" referrerPolicy="no-referrer" />
             <img src="https://i.ibb.co/NdG5wZhg/Whats-App-Image-2026-06-21-at-1-41-16-PM.jpg" alt="Activity 3" className="rounded-xl shadow-lg w-full h-64 object-cover" referrerPolicy="no-referrer" />
+            <img src="https://i.ibb.co/tPDTBQSS/Whats-App-Image-2026-06-21-at-2-16-51-PM.jpg" alt="Activity 4" className="rounded-xl shadow-lg w-full h-64 object-cover" referrerPolicy="no-referrer" />
+            <img src="https://i.ibb.co/gM8d0YSL/Whats-App-Image-2026-06-21-at-2-16-50-PM.jpg" alt="Activity 5" className="rounded-xl shadow-lg w-full h-64 object-cover" referrerPolicy="no-referrer" />
           </div>
         </div>
       </section>

@@ -511,10 +511,12 @@ async function startServer() {
   // -- Auth API --
   app.post("/api/auth/login", (req, res) => {
     const { username, password } = req.body;
+    console.log(`Login attempt for username: ${username}`);
     try {
       let row = db.prepare("SELECT * FROM users WHERE username = ? AND password = ?").get(username, password);
       
       if (!row) {
+        console.log("Not found in users, checking teachers...");
         const teacher = db.prepare("SELECT * FROM teachers WHERE username = ? AND password = ? AND has_admin_access = 1").get(username, password) as any;
         if (teacher) {
           row = { id: teacher.id, username: teacher.username, role: 'admin' };
@@ -522,12 +524,15 @@ async function startServer() {
       }
 
       if (row) {
+        console.log("Login successful");
         res.json({ token: "mock-jwt-token-123", user: row });
       } else {
+        console.log("Invalid credentials");
         res.status(401).json({ error: "Invalid credentials" });
       }
     } catch (err) {
-      res.status(500).json({ error: "Database error" });
+      console.error("Login route error:", err);
+      res.status(500).json({ error: "Database error", details: err });
     }
   });
 

@@ -22,6 +22,11 @@ export default function About() {
            </ul>
         </div>
       </div>
+      <div className="mt-12 bg-white rounded-lg p-8 border border-slate-200 shadow-sm flex flex-col items-center">
+          <img src="https://i.ibb.co/2Y0t2k0h/Whats-App-Image-2026-06-21-at-2-12-21-PM.jpg" alt="হাফেজ মাওলানা ফেরদাউস হোসাইন মাহমুদী" className="w-40 h-40 rounded-full object-cover mb-4 border-4 border-gold/20" referrerPolicy="no-referrer" />
+          <h3 className="text-2xl font-bold mb-1">হাফেজ মাওলানা ফেরদাউস হোসাইন মাহমুদী</h3>
+          <p className="text-lg text-primary font-semibold">পরিচালক</p>
+      </div>
     </div>
   );
 }

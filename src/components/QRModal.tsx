@@ -260,7 +260,7 @@ export default function QRModal({ isOpen, onClose, initialTab = 'view' }: QRModa
                 {/* Direct Action triggers */}
                 <div className="grid grid-cols-2 gap-3 w-full max-w-sm mt-3">
                   <button 
-                    onClick={() => copyToClipboard("https://tahfizulquran.profwht.info/")}
+                    onClick={() => copyToClipboard("https://tahfizulquranmodelmadrassa.xyz/")}
                     className="py-2.5 px-4 bg-slate-100 hover:bg-slate-200 text-slate-800 font-bold rounded-xl transition-all shadow-sm flex items-center justify-center gap-2 text-sm"
                   >
                     {isCopied ? <Check size={16} className="text-emerald-600" /> : <Copy size={16} />}
