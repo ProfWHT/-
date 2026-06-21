@@ -22,10 +22,10 @@ export default function Login() {
         localStorage.setItem('adminToken', data.token);
         navigate('/admin');
       } else {
-        setError(data.error || 'Login failed');
+        setError(data.error || data.details || 'Login failed');
       }
     } catch (err) {
-      setError('Server error');
+      setError(`Server error: ${err}`);
     }
   };
 

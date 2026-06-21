@@ -16,6 +16,22 @@ export default function Home() {
   const [stats, setStats] = useState<any>(null);
   const [isModalOpen, setIsModalOpen] = useState(false);
   const [qrTab, setQrTab] = useState<'view' | 'scan'>('view');
+  
+  const heroImages = [
+    "https://i.ibb.co/PsD9cGWz/Whats-App-Image-2026-06-21-at-1-41-15-PM.jpg",
+    "https://i.ibb.co/35C7PY16/Whats-App-Image-2026-06-21-at-1-41-16-PM-1.jpg",
+    "https://i.ibb.co/NdG5wZhg/Whats-App-Image-2026-06-21-at-1-41-16-PM.jpg",
+    "https://i.ibb.co/tPDTBQSS/Whats-App-Image-2026-06-21-at-2-16-51-PM.jpg",
+    "https://i.ibb.co/gM8d0YSL/Whats-App-Image-2026-06-21-at-2-16-50-PM.jpg"
+  ];
+  const [currentHeroIndex, setCurrentHeroIndex] = useState(0);
+
+  useEffect(() => {
+    const interval = setInterval(() => {
+      setCurrentHeroIndex((prev) => (prev + 1) % heroImages.length);
+    }, 5000);
+    return () => clearInterval(interval);
+  }, []);
 
   useEffect(() => {
     fetch('/api/settings')
@@ -77,9 +93,14 @@ export default function Home() {
           >
             <div className="aspect-square rounded-full border border-gold/30 absolute inset-0 animate-[spin_60s_linear_infinite]"></div>
             <div className="aspect-square rounded-full border border-white/20 absolute inset-4 animate-[spin_40s_linear_infinite_reverse]"></div>
-            <img 
-              src="https://i.ibb.co/gM8d0YSL/Whats-App-Image-2026-06-21-at-2-16-50-PM.jpg" 
+            <motion.img 
+              key={heroImages[currentHeroIndex]}
+              src={heroImages[currentHeroIndex]}
               alt="Madrasah" 
+              initial={{ opacity: 0 }}
+              animate={{ opacity: 1 }}
+              exit={{ opacity: 0 }}
+              transition={{ duration: 1 }}
               className="rounded-full w-full max-w-[250px] sm:max-w-[300px] md:max-w-[400px] mx-auto relative z-10 border-4 border-white/10 shadow-2xl object-cover aspect-square"
               referrerPolicy="no-referrer"
             />

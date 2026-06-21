@@ -532,7 +532,7 @@ async function startServer() {
       }
     } catch (err) {
       console.error("Login route error:", err);
-      res.status(500).json({ error: "Database error", details: err });
+      res.status(500).json({ error: "Database error", details: String(err) });
     }
   });
 

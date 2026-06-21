@@ -50,7 +50,8 @@ export default function Donation() {
       if (response.ok) {
         setSuccess(true);
       } else {
-        alert('কোথাও সমস্যা হয়েছে। পুনরায় চেষ্টা করুন।');
+        const errorData = await response.json();
+        alert(errorData.error || 'কোথাও সমস্যা হয়েছে। পুনরায় চেষ্টা করুন।');
       }
     } catch (error) {
       alert('সার্ভার এরর');
@@ -479,9 +480,11 @@ export default function Donation() {
                    </div>
 
                    <div>
-                     <label className="block text-sm font-semibold text-slate-700 mb-2">পেমেন্ট মেথড</label>
-                     <input type="text" readOnly value="বিকাশ (Personal)" className="w-full px-4 py-3 border border-slate-200 rounded-lg bg-slate-50 text-slate-700 outline-none" />
-                     <input type="hidden" name="payment_method" value="বিকাশ" />
+                     <label className="block text-sm font-semibold text-slate-700 mb-2">পেমেন্ট মেথড *</label>
+                     <select required name="payment_method" className="w-full px-4 py-3 border border-slate-200 rounded-lg focus:ring-2 focus:ring-primary outline-none bg-white">
+                        <option value="বিকাশ (Personal)">বিকাশ (Personal)</option>
+                        <option value="নগদ (Personal)">নগদ (Personal)</option>
+                     </select>
                    </div>
 
                    <div className="bg-blue-50 border border-blue-200 p-4 rounded-xl">
