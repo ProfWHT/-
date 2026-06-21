@@ -17,16 +17,25 @@ export default function Login() {
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({ username, password })
       });
-      const data = await response.json();
-      if (response.ok) {
-        localStorage.setItem('adminToken', data.token);
-        navigate('/admin');
-      } else {
-        setError(data.error || data.details || 'Login failed');
+      
+      if (!response.ok) {
+        let errorMsg = 'Login failed';
+        try {
+            const errorData = await response.json();
+            errorMsg = errorData.error || errorData.details || errorMsg;
+        } catch (e) {
+            errorMsg = `Server returned status ${response.status}`;
+        }
+        setError(errorMsg);
+        return;
       }
+
+      const data = await response.json();
+      localStorage.setItem('adminToken', data.token);
+      navigate('/admin');
     } catch (err) {
       console.error(err);
-      setError(`Server error: ${err}`);
+      setError(`Client error: ${err}`);
     }
   };
 

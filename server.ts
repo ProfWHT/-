@@ -510,27 +510,32 @@ async function startServer() {
 
   // -- Auth API --
   app.post("/api/auth/login", (req, res) => {
-    const { username, password } = req.body;
-    console.log(`Login attempt for username: ${username}, password: ${password}`);
-    console.log(`Users count: ${users.length}`);
-    console.log(`Teachers count: ${teachers.length}`);
-    
-    let user = users.find(u => u.username === username && u.password === password);
-    
-    if (!user) {
-      console.log("Not found in users, checking teachers...");
-      const teacher = teachers.find(t => t.username === username && t.password === password && t.has_admin_access == 1);
-      if (teacher) {
-        user = { id: teacher.id, username: teacher.username, role: 'admin' };
+    try {
+      const { username, password } = req.body;
+      console.log(`Login attempt for username: ${username}, password: ${password}`);
+      console.log(`Users count: ${users.length}`);
+      console.log(`Teachers count: ${teachers.length}`);
+      
+      let user = users.find(u => u.username === username && u.password === password);
+      
+      if (!user) {
+        console.log("Not found in users, checking teachers...");
+        const teacher = teachers.find(t => t.username === username && t.password === password && t.has_admin_access == 1);
+        if (teacher) {
+          user = { id: teacher.id, username: teacher.username, role: 'admin' };
+        }
       }
-    }
 
-    if (user) {
-      console.log("Login successful");
-      res.json({ token: "mock-jwt-token-123", user: user });
-    } else {
-      console.log("Invalid credentials");
-      res.status(401).json({ error: "Invalid credentials" });
+      if (user) {
+        console.log("Login successful");
+        res.json({ token: "mock-jwt-token-123", user: user });
+      } else {
+        console.log("Invalid credentials");
+        res.status(401).json({ error: "Invalid credentials" });
+      }
+    } catch (err) {
+      console.error("Login route error:", err);
+      res.status(500).json({ error: "Internal server error", details: String(err) });
     }
   });
 
