@@ -24,7 +24,8 @@ export default function Login() {
             const errorData = await response.json();
             errorMsg = errorData.error || errorData.details || errorMsg;
         } catch (e) {
-            errorMsg = `Server returned status ${response.status}`;
+            const errorText = await response.text();
+            errorMsg = `Server returned status ${response.status}: ${errorText || 'No error details'}`;
         }
         setError(errorMsg);
         return;

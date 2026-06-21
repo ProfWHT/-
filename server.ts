@@ -439,12 +439,6 @@ async function startServer() {
   app.use(cors());
   app.use(express.json({ limit: '10mb' }));
 
-  // Error handling middleware to ensure JSON responses on errors
-  app.use((err: any, req: any, res: any, next: any) => {
-    console.error("Unhandled error:", err);
-    res.status(500).json({ error: "Internal server error", details: err.message });
-  });
-
   const upload = multer({ storage: multer.memoryStorage() });
 
   app.post("/api/upload", upload.single("file"), async (req, res) => {
@@ -864,6 +858,12 @@ async function startServer() {
     } catch (err: any) {
       res.status(500).json({ error: err.message });
     }
+  });
+
+  // Error handling middleware to ensure JSON responses on errors
+  app.use((err: any, req: any, res: any, next: any) => {
+    console.error("Unhandled error:", err);
+    res.status(500).json({ error: "Internal server error", details: err.message });
   });
 
   // Vite middleware for development
