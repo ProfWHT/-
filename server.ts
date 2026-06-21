@@ -449,7 +449,6 @@ async function startServer() {
     try {
       const { url } = await put(req.file.originalname, req.file.buffer, {
         access: 'public',
-        token: process.env.BLOB_READ_WRITE_TOKEN,
       });
       res.json({ url });
     } catch (err: any) {

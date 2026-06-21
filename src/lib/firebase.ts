@@ -9,7 +9,7 @@ const app = apps.length > 0 ? apps[0] : initializeApp(firebaseConfig || {
   projectId: "dummy",
 });
 
-export const db = getFirestore(app);
+export const db = getFirestore(app, firebaseConfig.firestoreDatabaseId);
 export const auth = getAuth(app);
 
 export enum OperationType {
