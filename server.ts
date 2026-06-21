@@ -5,7 +5,7 @@ import multer from "multer";
 import { put } from "@vercel/blob";
 import fs from "fs";
 import { initializeApp } from "firebase/app";
-import { initializeFirestore, collection, getDocs, doc, setDoc, deleteDoc } from "firebase/firestore";
+import { initializeFirestore, collection, getDocs, doc, setDoc, deleteDoc, setLogLevel } from "firebase/firestore";
 import firebaseConfig from "./firebase-applet-config.json";
 
 // Temporary in-memory storage, DB file initialization removed for Vercel
@@ -31,6 +31,7 @@ const settings: Record<string, string> = {
 // Initialize Firebase Firestore with local fallback using static json import
 let firestoreDb: any = null;
 try {
+  setLogLevel('error'); // Silence benign grpc idle disconnect warnings in node.js
   if (firebaseConfig && firebaseConfig.apiKey) {
     const fApp = initializeApp(firebaseConfig);
     firestoreDb = initializeFirestore(fApp, {
@@ -461,7 +462,7 @@ async function startServer() {
   // -- Admin Management API --
   app.get("/api/admins", (req, res) => {
     try {
-      const admins = db.prepare("SELECT id, username, role FROM users WHERE role = 'admin'").all();
+      const admins = users.filter((u: any) => u.role === 'admin').map((u) => ({ id: u.id, username: u.username, role: u.role }));
       res.json(admins);
     } catch (err: any) {
       res.status(500).json({ error: err.message });
@@ -471,7 +472,9 @@ async function startServer() {
   app.post("/api/admins", (req, res) => {
     const { username, password } = req.body;
     try {
-      db.prepare("INSERT INTO users (username, password, role) VALUES (?, ?, 'admin')").run(username, password);
+      const newUser = { id: Date.now(), username, password, role: 'admin' };
+      users.push(newUser);
+      syncToFirestore('users', newUser.id, newUser);
       res.json({ status: "success" });
     } catch (err: any) {
       res.status(500).json({ error: err.message });
@@ -483,9 +486,10 @@ async function startServer() {
     const { oldPassword, newPassword } = req.body;
     const username = 'admin'; // simplified
     try {
-        const stmt = db.prepare("UPDATE users SET password = ? WHERE username = ? AND password = ?");
-        const info = stmt.run(newPassword, username, oldPassword);
-        if (info.changes > 0) {
+        const index = users.findIndex((u: any) => u.username === username && u.password === oldPassword);
+        if (index > -1) {
+            users[index].password = newPassword;
+            syncToFirestore('users', users[index].id, users[index]);
             res.json({ status: "success" });
         } else {
             res.status(400).json({ error: "Invalid old password" });
@@ -540,7 +544,7 @@ async function startServer() {
   app.post("/api/auth/student/login", (req, res) => {
     const { roll_number, password } = req.body;
     try {
-      const student = db.prepare("SELECT id, name, roll_number, department, class_name, academic_year, result, photo, fee_paid, fee_due, status FROM students WHERE roll_number = ? AND password = ?").get(roll_number, password);
+      const student = students.find((s: any) => s.roll_number === roll_number && s.password === password);
       if (student) {
         res.json({ token: "student-jwt-" + student.id, student });
       } else {
@@ -556,7 +560,7 @@ async function startServer() {
     const id = req.headers['x-student-id'];
     try {
       if(!id) return res.status(401).json({error: "No auth"});
-      const student = db.prepare("SELECT * FROM students WHERE id = ?").get(id);
+      const student = students.find((s: any) => String(s.id) === String(id));
       if (student) {
         res.json({ student });
       } else {
@@ -570,17 +574,16 @@ async function startServer() {
   // -- Dashboard API --
   app.get("/api/dashboard/stats", (req, res) => {
     try {
-      const totalStudents = db.prepare("SELECT COUNT(*) as count FROM students WHERE status != 'completed'").get() as any;
-      const totalAdmissions = db.prepare("SELECT COUNT(*) as count FROM admissions WHERE status = 'pending'").get() as any;
-      const totalDonations = db.prepare("SELECT SUM(amount) as total FROM donations WHERE status = 'received'").get() as any;
-      
-      const teachersCount = db.prepare("SELECT COUNT(*) as count FROM teachers").get() as any;
+      const totalStudents = students.filter((s:any) => s.status !== 'completed').length;
+      const totalAdmissions = admissions.filter((a:any) => a.status === 'pending').length;
+      const totalDonations = donations.filter((d:any) => d.status === 'received').reduce((sum:number, d:any) => sum + Number(d.amount), 0);
+      const tCount = teachers.length;
 
       res.json({
-        totalStudents: totalStudents.count,
-        pendingAdmissions: totalAdmissions.count,
-        totalDonations: totalDonations.total || 0,
-        totalTeachers: teachersCount.count || 0
+        totalStudents: totalStudents,
+        pendingAdmissions: totalAdmissions,
+        totalDonations: totalDonations || 0,
+        totalTeachers: tCount || 0
       });
     } catch (err: any) {
       res.status(500).json({ error: err.message });
@@ -590,15 +593,7 @@ async function startServer() {
   // -- Settings API --
   app.get("/api/settings", (req, res) => {
     try {
-      const rows = db.prepare("SELECT * FROM settings").all() as any[];
-      const settingsMap = {
-        ...settings,
-        ...rows.reduce((acc: any, row: any) => {
-          acc[row.key] = row.value;
-          return acc;
-        }, {})
-      };
-      res.json(settingsMap);
+      res.json(settings);
     } catch (err: any) {
       res.status(500).json({ error: err.message });
     }
@@ -607,14 +602,10 @@ async function startServer() {
   app.post("/api/settings", (req, res) => {
     try {
       const settingsData = req.body;
-      const stmt = db.prepare("INSERT OR REPLACE INTO settings (key, value) VALUES (?, ?)");
-      const tx = db.transaction(() => {
-        for (const key of Object.keys(settingsData)) {
-          stmt.run(key, settingsData[key]);
-          settings[key] = settingsData[key];
-        }
-      });
-      tx();
+      for (const key of Object.keys(settingsData)) {
+        settings[key] = String(settingsData[key]);
+        syncToFirestore('settings', key, { value: String(settingsData[key]) });
+      }
       res.json({ status: "success" });
     } catch (err: any) {
       res.status(500).json({ error: err.message });
@@ -624,8 +615,7 @@ async function startServer() {
   // -- Students API --
   app.get("/api/students", (req, res) => {
     try {
-      const rows = db.prepare("SELECT * FROM students").all();
-      res.json(rows);
+      res.json(students);
     } catch (err: any) {
       res.status(500).json({ error: err.message });
     }
@@ -634,10 +624,11 @@ async function startServer() {
   app.post("/api/students", (req, res) => {
     const { name, roll_number, department, guardian_name, guardian_phone, address, status, class_name, academic_year, result, password, photo, fee_paid, fee_due } = req.body;
     try {
-      const dbResult = db.prepare(
-        "INSERT INTO students (name, roll_number, department, guardian_name, guardian_phone, address, status, class_name, academic_year, result, password, photo, fee_paid, fee_due) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)"
-      ).run(name, roll_number, department, guardian_name, guardian_phone, address, status, class_name, academic_year, result, password || '', photo || '', fee_paid || 0, fee_due || 0);
-      res.json({ id: dbResult.lastInsertRowid, status: "success" });
+      const id = Date.now();
+      const newStudent = { id, name, roll_number, department, guardian_name, guardian_phone, address, status, class_name, academic_year, result, password: password || '', photo: photo || '', fee_paid: fee_paid || 0, fee_due: fee_due || 0 };
+      students.push(newStudent);
+      syncToFirestore('students', id, newStudent);
+      res.json({ id: id, status: "success" });
     } catch (err: any) {
       res.status(500).json({ error: err.message });
     }
@@ -647,9 +638,11 @@ async function startServer() {
     const { name, roll_number, department, guardian_name, guardian_phone, address, status, class_name, academic_year, result, password, photo, fee_paid, fee_due } = req.body;
     const { id } = req.params;
     try {
-      db.prepare(
-        "UPDATE students SET name = ?, roll_number = ?, department = ?, guardian_name = ?, guardian_phone = ?, address = ?, status = ?, class_name = ?, academic_year = ?, result = ?, password = ?, photo = ?, fee_paid = ?, fee_due = ? WHERE id = ?"
-      ).run(name, roll_number, department, guardian_name, guardian_phone, address, status, class_name, academic_year, result, password || '', photo || '', fee_paid || 0, fee_due || 0, id);
+      const idx = students.findIndex((s:any) => String(s.id) === String(id));
+      if (idx > -1) {
+        students[idx] = { ...students[idx], name, roll_number, department, guardian_name, guardian_phone, address, status, class_name, academic_year, result, password: password || students[idx].password, photo: photo || students[idx].photo, fee_paid: fee_paid || 0, fee_due: fee_due || 0 };
+        syncToFirestore('students', id, students[idx]);
+      }
       res.json({ status: "success" });
     } catch (err: any) {
       res.status(500).json({ error: err.message });
@@ -659,7 +652,11 @@ async function startServer() {
   app.delete("/api/students/:id", (req, res) => {
     const { id } = req.params;
     try {
-      db.prepare("DELETE FROM students WHERE id = ?").run(id);
+      const idx = students.findIndex((s:any) => String(s.id) === String(id));
+      if (idx > -1) {
+        students.splice(idx, 1);
+        syncToFirestore('students', id, null);
+      }
       res.json({ status: "success" });
     } catch (err: any) {
       res.status(500).json({ error: err.message });
@@ -670,10 +667,11 @@ async function startServer() {
   app.post("/api/admissions", (req, res) => {
     const { student_name, dob, guardian_name, contact_number, department, payment_method, trx_id } = req.body;
     try {
-      const result = db.prepare(
-        "INSERT INTO admissions (student_name, dob, guardian_name, contact_number, department, payment_method, trx_id) VALUES (?, ?, ?, ?, ?, ?, ?)"
-      ).run(student_name, dob, guardian_name, contact_number, department, payment_method, trx_id);
-      res.json({ id: result.lastInsertRowid, status: "success" });
+      const id = Date.now();
+      const newAd = { id, student_name, dob, guardian_name, contact_number, department, payment_method, trx_id, status: 'pending' };
+      admissions.push(newAd);
+      syncToFirestore('admissions', id, newAd);
+      res.json({ id: id, status: "success" });
     } catch (err: any) {
       res.status(500).json({ error: err.message });
     }
@@ -681,8 +679,7 @@ async function startServer() {
 
   app.get("/api/admissions", (req, res) => {
     try {
-      const rows = db.prepare("SELECT * FROM admissions ORDER BY id DESC").all();
-      res.json(rows);
+      res.json([...admissions].reverse());
     } catch (err: any) {
       res.status(500).json({ error: err.message });
     }
@@ -692,7 +689,11 @@ async function startServer() {
     const { status } = req.body;
     const { id } = req.params;
     try {
-      db.prepare("UPDATE admissions SET status = ? WHERE id = ?").run(status, id);
+      const idx = admissions.findIndex((a:any) => String(a.id) === String(id));
+      if (idx > -1) {
+        admissions[idx].status = status;
+        syncToFirestore('admissions', id, admissions[idx]);
+      }
       res.json({ status: "success" });
     } catch (err: any) {
       res.status(500).json({ error: err.message });
@@ -702,7 +703,11 @@ async function startServer() {
   app.delete("/api/admissions/:id", (req, res) => {
     const { id } = req.params;
     try {
-      db.prepare("DELETE FROM admissions WHERE id = ?").run(id);
+      const idx = admissions.findIndex((a:any) => String(a.id) === String(id));
+      if (idx > -1) {
+        admissions.splice(idx, 1);
+        syncToFirestore('admissions', id, null);
+      }
       res.json({ status: "success" });
     } catch (err: any) {
       res.status(500).json({ error: err.message });
@@ -712,8 +717,7 @@ async function startServer() {
   // -- Donations API --
   app.get("/api/donations", (req, res) => {
     try {
-      const rows = db.prepare("SELECT * FROM donations ORDER BY id DESC").all();
-      res.json(rows);
+      res.json([...donations].reverse());
     } catch (err: any) {
       res.status(500).json({ error: err.message });
     }
@@ -723,7 +727,11 @@ async function startServer() {
     const { status } = req.body;
     const { id } = req.params;
     try {
-      db.prepare("UPDATE donations SET status = ? WHERE id = ?").run(status, id);
+      const idx = donations.findIndex((d:any) => String(d.id) === String(id));
+      if (idx > -1) {
+        donations[idx].status = status;
+        syncToFirestore('donations', id, donations[idx]);
+      }
       res.json({ status: "success" });
     } catch (err: any) {
       res.status(500).json({ error: err.message });
@@ -734,11 +742,12 @@ async function startServer() {
     const { donor_name, amount, donation_type, payment_method, trx_id } = req.body;
     const date = new Date().toISOString();
     try {
-      const result = db.prepare(
-        "INSERT INTO donations (donor_name, amount, donation_type, payment_method, trx_id, date) VALUES (?, ?, ?, ?, ?, ?)"
-      ).run(donor_name, amount, donation_type, payment_method, trx_id, date);
+      const id = Date.now();
+      const newDonation = { id, donor_name, amount, donation_type, payment_method, trx_id, date, status: 'pending' };
+      donations.push(newDonation);
+      syncToFirestore('donations', id, newDonation);
 
-      res.json({ id: result.lastInsertRowid, status: "success" });
+      res.json({ id: id, status: "success" });
     } catch (err: any) {
       res.status(500).json({ error: err.message });
     }
@@ -747,8 +756,7 @@ async function startServer() {
   // -- Donors API --
   app.get("/api/donors", (req, res) => {
       try {
-        const rows = db.prepare("SELECT * FROM donors ORDER BY total_donated DESC").all();
-        res.json(rows);
+        res.json([...donors].sort((a:any, b:any) => b.total_donated - a.total_donated));
       } catch (err: any) {
         res.status(500).json({ error: err.message });
       }
@@ -757,7 +765,10 @@ async function startServer() {
   app.post("/api/donors", (req, res) => {
       const { name, photo, phone, address, total_donated } = req.body;
       try {
-        db.prepare("INSERT INTO donors (name, photo, phone, address, total_donated) VALUES (?, ?, ?, ?, ?)").run(name, photo || '', phone || '', address || '', total_donated || 0);
+        const id = Date.now();
+        const newDonor = { id, name, photo: photo || '', phone: phone || '', address: address || '', total_donated: total_donated || 0 };
+        donors.push(newDonor);
+        syncToFirestore('donors', id, newDonor);
         res.json({ status: "success" });
       } catch (err: any) {
         res.status(500).json({ error: err.message });
@@ -767,9 +778,7 @@ async function startServer() {
   // -- Teachers API --
   app.get("/api/teachers", (req, res) => {
     try {
-      const rows = db.prepare("SELECT * FROM teachers ORDER BY id DESC").all();
-      // Remove passwords from response
-      const safeRows = rows.map((r: any) => { const { password, ...rest } = r; return rest; });
+      const safeRows = [...teachers].reverse().map((r: any) => { const { password, ...rest } = r; return rest; });
       res.json(safeRows);
     } catch (err: any) {
       res.status(500).json({ error: err.message });
@@ -779,11 +788,14 @@ async function startServer() {
   app.post("/api/teachers", (req, res) => {
     const { name, title, photo, phone, username, password, has_admin_access } = req.body;
     try {
-      const result = db.prepare(`
-        INSERT INTO teachers (name, title, photo, phone, username, password, has_admin_access) 
-        VALUES (?, ?, ?, ?, ?, ?, ?)
-      `).run(name, title, photo || '', phone || '', username || '', password || '', has_admin_access ? 1 : 0);
-      res.json({ id: result.lastInsertRowid, status: "success" });
+      if (username && teachers.find((t:any) => t.username === username)) {
+         return res.status(400).json({ error: "Username already exists" });
+      }
+      const id = Date.now();
+      const newTeacher = { id, name, title, photo: photo || '', phone: phone || '', username: username || '', password: password || '', has_admin_access: has_admin_access ? 1 : 0 };
+      teachers.push(newTeacher);
+      syncToFirestore('teachers', id, newTeacher);
+      res.json({ id: id, status: "success" });
     } catch (err: any) {
       if (err.message.includes('UNIQUE constraint failed')) {
         res.status(400).json({ error: "Username already exists" });
@@ -797,29 +809,28 @@ async function startServer() {
     const { id } = req.params;
     const { name, title, photo, phone, username, password, has_admin_access } = req.body;
     try {
-      if (password) {
-        db.prepare(`
-          UPDATE teachers SET name=?, title=?, photo=?, phone=?, username=?, password=?, has_admin_access=? WHERE id=?
-        `).run(name, title, photo || '', phone || '', username || '', password, has_admin_access ? 1 : 0, id);
-      } else {
-        db.prepare(`
-          UPDATE teachers SET name=?, title=?, photo=?, phone=?, username=?, has_admin_access=? WHERE id=?
-        `).run(name, title, photo || '', phone || '', username || '', has_admin_access ? 1 : 0, id);
+      if (username && teachers.find((t:any) => t.username === username && String(t.id) !== String(id))) {
+         return res.status(400).json({ error: "Username already exists" });
+      }
+      const idx = teachers.findIndex((t:any) => String(t.id) === String(id));
+      if (idx > -1) {
+        teachers[idx] = { ...teachers[idx], name, title, photo: photo || '', phone: phone || '', username: username || '', password: password || teachers[idx].password, has_admin_access: has_admin_access ? 1 : 0 };
+        syncToFirestore('teachers', id, teachers[idx]);
       }
       res.json({ status: "success" });
     } catch (err: any) {
-      if (err.message.includes('UNIQUE constraint failed')) {
-        res.status(400).json({ error: "Username already exists" });
-      } else {
-        res.status(500).json({ error: err.message });
-      }
+      res.status(500).json({ error: err.message });
     }
   });
 
   app.delete("/api/teachers/:id", (req, res) => {
     const { id } = req.params;
     try {
-      db.prepare("DELETE FROM teachers WHERE id = ?").run(id);
+      const idx = teachers.findIndex((t:any) => String(t.id) === String(id));
+      if (idx > -1) {
+        teachers.splice(idx, 1);
+        syncToFirestore('teachers', id, null);
+      }
       res.json({ status: "success" });
     } catch (err: any) {
       res.status(500).json({ error: err.message });
@@ -829,8 +840,7 @@ async function startServer() {
   // -- Gallery API --
   app.get("/api/gallery", (req, res) => {
     try {
-      const rows = db.prepare("SELECT * FROM gallery ORDER BY id DESC").all();
-      res.json(rows);
+      res.json([...gallery].reverse());
     } catch (err: any) {
       res.status(500).json({ error: err.message });
     }
@@ -840,10 +850,11 @@ async function startServer() {
     const { image, caption } = req.body;
     const date = new Date().toISOString();
     try {
-      const result = db.prepare(
-        "INSERT INTO gallery (image, caption, date) VALUES (?, ?, ?)"
-      ).run(image, caption, date);
-      res.json({ id: result.lastInsertRowid, status: "success" });
+      const id = Date.now();
+      const newPhoto = { id, image, caption, date };
+      gallery.push(newPhoto);
+      syncToFirestore('gallery', id, newPhoto);
+      res.json({ id: id, status: "success" });
     } catch (err: any) {
       res.status(500).json({ error: err.message });
     }
@@ -852,7 +863,11 @@ async function startServer() {
   app.delete("/api/gallery/:id", (req, res) => {
     const { id } = req.params;
     try {
-      db.prepare("DELETE FROM gallery WHERE id = ?").run(id);
+      const idx = gallery.findIndex((g:any) => String(g.id) === String(id));
+      if (idx > -1) {
+        gallery.splice(idx, 1);
+        syncToFirestore('gallery', id, null);
+      }
       res.json({ status: "success" });
     } catch (err: any) {
       res.status(500).json({ error: err.message });
