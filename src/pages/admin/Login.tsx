@@ -20,12 +20,11 @@ export default function Login() {
       
       if (!response.ok) {
         let errorMsg = 'Login failed';
-        const responseText = await response.text();
         try {
-            const errorData = JSON.parse(responseText);
+            const errorData = await response.json();
             errorMsg = errorData.error || errorData.details || errorMsg;
         } catch (e) {
-            errorMsg = `Server returned status ${response.status}: ${responseText || 'No error details'}`;
+            errorMsg = `Server returned status ${response.status}`;
         }
         setError(errorMsg);
         return;
